@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <div class="left-column">
+        <div id="console" class="console"></div>
+    </div>
+
+    <div class="right-column">
+        <h1>Card Game</h1>
+        <div class="shields">
+            <h3>Current Player</h3>
+            <div id="player-hand"></div>
+            <br>
+            <div id="players-shields"></div>
+        </div>
+
+        <div class="actions">
+            <h3>Game Actions</h3>
+            <div>
+                <label for="trim-card-index" style="margin-left: 10px; font-weight: bold;">Input:</label>
+                <input type="text" id="trim-card-index" placeholder="Hit <enter> to submit">
+            </div>
+            <div style="margin-top: 30px; display: flex; justify-content: center;">
+                <button id="test-btn">Setup Game</button>
+                <button id="play-turn-btn">Start Game</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
