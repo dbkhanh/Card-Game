@@ -179,4 +179,14 @@ public class Controller {
         game.rigScenarios(scenario);
     }
 
+    @GetMapping("/finalShieldAndHand")
+    public String finalShieldAndHand(){
+        StringBuilder output = new StringBuilder();
+        for(Player p : game.getPlayers()){
+            output.append("\n\n").append(p.getName()).append("'s final hand after quest is ").append(p.showHand()).append("\n");
+            output.append(p.getName()).append("'s final shield after quest is ").append(p.getShields()).append("\n");
+        }
+        return output.toString();
+    }
+
 }

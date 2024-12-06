@@ -672,6 +672,7 @@ async function doneQuest(){
     questCompleted = "true";
     const final = await endGame();
     await startTrimming();
+    await finalShieldAndHand();
     if(final.includes("End Game!")) return;
     await nextPlayer();
     await playTurn();
@@ -831,6 +832,22 @@ async function endGame(){
     } catch (error) {
         console.error("Error fetching end Game:", error);
         logToConsole(`Error fetching player index: ${error.message}`);
+        throw error;
+    }
+}
+
+async function finalShieldAndHand(){
+    try {
+        const response = await fetch(`${apiBaseUrl}/finalShieldAndHand`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch player index: ${response.status}`);
+        }
+        const result = await response.text();
+        logToConsole(result);
+        return result;
+    } catch (error) {
+        console.error("Error finalShieldAndHand:", error);
+        logToConsole(`Error finalShieldAndHand: ${error.message}`);
         throw error;
     }
 }

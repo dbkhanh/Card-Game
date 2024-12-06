@@ -329,7 +329,7 @@ public Game(List<String> playerNames) {
     public String handlePlayerParticipation(int currentPlayerIndex, String input) {
         StringBuilder output = new StringBuilder();
 
-        if (askPlayer > 0) { 
+        if (askPlayer > 0) {
             output.append(promptPlayersForParticipation(currentPlayerIndex, input));
             askPlayer--;
 
@@ -465,12 +465,14 @@ public Game(List<String> playerNames) {
         if (input.equalsIgnoreCase("quit")){
             output.append(participant.getName()).append(" prepared an attack with value: ").append(attackValue).append("\n");
             if (attackValue >= stageValues.get(currentStageIndex - 1)) {
+//                output.append(participant.getName()).append("'s updated hand: ").append(participant.showHand());
                 output.append(participant.getName()).append(" succeeds with an attack value of ").append(attackValue).append("!\n\n");
                 if(!stageWinners.contains(participant)) stageWinners.add(participant);
                 if (isFinalStage(currentStageIndex)) output.append(awardShieldsToWinners(participant, stageValues.size()));
                 if (participant.equals(stageWinners.get(stageWinners.size() - 1)) && isFinalStage(currentStageIndex)) output.append(handleQuestEnd());
             } else {
                 stageParticipants.remove(participant);
+//                output.append(participant.getName()).append("'s updated hand: ").append(participant.showHand());
                 output.append(participant.getName()).append(" fails with an attack value of ").append(attackValue).append(".\n\n");
                 if(stageWinners.contains(participant)) stageWinners.remove(participant);
             }
@@ -753,6 +755,11 @@ public Game(List<String> playerNames) {
                         new Card("F30", "Foe", 30), new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15),
                         new Card("F10", "Foe", 10), new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20),
                         new Card("B15", "Weapon", 15), new Card("S10", "Weapon", 10), new Card("F30", "Foe", 30),
+                        new Card("L20", "Weapon", 20), new Card("S10", "Weapon", 10), new Card("F30", "Foe", 30),
+                        new Card("L20", "Weapon", 20), new Card("S10", "Weapon", 10), new Card("F30", "Foe", 30),
+                        new Card("L20", "Weapon", 20), new Card("S10", "Weapon", 10), new Card("F30", "Foe", 30),
+                        new Card("L20", "Weapon", 20), new Card("S10", "Weapon", 10), new Card("F30", "Foe", 30),
+                        new Card("L20", "Weapon", 20), new Card("S10", "Weapon", 10), new Card("F30", "Foe", 30),
                         new Card("L20", "Weapon", 20)
                 );
                 case 2 -> List.of(
@@ -803,8 +810,10 @@ public Game(List<String> playerNames) {
     public void setUpQuestCards(int scenario){
         List<Card> Quest = switch (scenario) {
             case 1 -> List.of(
+                    new Card("Q4", "Quest", 4),
                     new Card("Q4", "Quest", 4)
-            );
+
+                    );
 
             case 2 -> List.of(
                     new Card("Q4", "Quest", 4),
