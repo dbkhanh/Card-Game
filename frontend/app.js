@@ -1,4 +1,3 @@
-// Base URL for API calls
 const apiBaseUrl = "http://localhost:8080";
 let playersToTrim = [];
 let currentPlayerIndex = 0;
@@ -6,7 +5,6 @@ let currentSponsorIndex = 0;
 let totalPlayers = 4;
 let stageWinners = getStageWinners();
 
-// Utility to log messages to the on-screen console
 function logToConsole(message) {
     const consoleDiv = document.getElementById("console");
     const logEntry = document.createElement("div");
@@ -19,6 +17,21 @@ function logToConsole(message) {
 async function setupGame() {
     try {
         const response = await fetch(`${apiBaseUrl}/setupGame`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.text();
+        document.getElementById("console").innerText += result;
+
+    } catch (error) {
+        logToConsole(`Error starting game: ${error.message}`);
+    }
+}
+
+async function rigScenarios() {
+    try {
+        const response = await fetch(`${apiBaseUrl}/rigScenarios`);
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -49,7 +62,7 @@ async function playTurn() {
             checkPlayersToTrim();
 
             if (playersToTrim.length === 0) {
-                setTimeout(playTurn, 1000);
+                setTimeout(playTurn, 200);
             }
         }
 
@@ -115,7 +128,6 @@ async function promptSponsor() {
         while (askedPlayers < totalPlayers) {
             logToConsole(`Player ${currentSponsorIndex + 1}, do you want to sponsor the quest? (y/n)`);
 
-            // Wait for player input
             const input = await new Promise((resolve) => {
                 const sponsorInput = document.getElementById("trim-card-index");
                 getPlayerHand(currentSponsorIndex);
@@ -126,7 +138,7 @@ async function promptSponsor() {
                 const handleInput = (event) => {
                     if (event.key === "Enter") {
                         const value = sponsorInput.value.trim().toLowerCase();
-                        sponsorInput.value = ""; // Clear input field
+                        sponsorInput.value = "";
                         event.preventDefault();
 
                         if (value === "y" || value === "n") {
@@ -142,7 +154,6 @@ async function promptSponsor() {
                 sponsorInput.addEventListener("keypress", handleInput);
             });
 
-            // Send input to the backend
             try {
                 const response = await fetch(
                     `${apiBaseUrl}/promptSponsor?input=${encodeURIComponent(input)}&currentIndex=${currentSponsorIndex}`,
@@ -152,7 +163,6 @@ async function promptSponsor() {
                 const result = await response.text();
                 logToConsole(result);
 
-                // If sponsorship is accepted, stop further prompts
                 if (result.includes("will sponsor the quest")) {
                     //SPONSOR HERE
                     logToConsole(`Player ${currentSponsorIndex + 1} is building the quest!`);
@@ -164,12 +174,10 @@ async function promptSponsor() {
                 logToConsole(`Error processing sponsor input: ${error.message}`);
             }
 
-            // Move to the next player in circular order
             currentSponsorIndex = (currentSponsorIndex + 1) % totalPlayers;
             askedPlayers++;
         }
 
-        // If all players decline
         logToConsole("All players declined to sponsor the quest.");
         await setDoneStage(true);
         await nextPlayer();
@@ -225,19 +233,6 @@ async function getPlayerShield(playerIndex) {
         document.getElementById('players-shields').innerText = `Player ${playerIndex + 1} Shield: ${shield}`;
 
         return shield;
-    } catch (error) {
-        console.error('Error fetching player hand:', error);
-    }
-}
-
-async function getDoneStage() {
-    try {
-        const response = await fetch(`${apiBaseUrl}/getDoneStage`);
-        if (!response.ok) {
-            throw new Error(`Failed to get doneStage status`);
-        }
-        const doneStage = await response.text();
-        return doneStage === "true";
     } catch (error) {
         console.error('Error fetching player hand:', error);
     }
@@ -314,14 +309,13 @@ async function getNewDrawnCard() {
     }
 }
 
-// This function checks which players need to trim their hands
 async function checkPlayersToTrim() {
     try {
         const response = await fetch(`${apiBaseUrl}/checkPlayerHands`);
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        playersToTrim = await response.json();  // Update the list of players who need to trim
+        playersToTrim = await response.json();
     } catch (error) {
         console.error('Error checking players to trim hands:', error);
     }
@@ -356,12 +350,12 @@ async function startTrimming() {
                 event.preventDefault();
                 console.log(trimInput.value);
                 await trimHandPlayer();
-                trimInput.value = ''; // Clear input field
+                trimInput.value = '';
 
                 if (playersToTrim.length === 0) {
                     logToConsole("All players have trimmed their hands.");
                     trimInput.removeEventListener("keypress", handleTrim);
-                    resolve(); // Signal that trimming is complete
+                    resolve();
                 } else {
                     logToConsole(`Now it's Player ${playersToTrim[0] + 1}'s turn to trim. Type the position of the card to trim:
 `);
@@ -414,14 +408,12 @@ async function handleQuestSponsor() {
                 logToConsole(result);
 
                 if (result.includes("Warning:")) {
-                    // Stage is invalid, stay in the current stage
                     stageValid = false;
                 } else if (inputValue.toLowerCase() === "quit") {
                     if (result.includes("Stage setup complete")) {
                         stageValid = true;
                         getPlayerHand(currentSponsorIndex);
                         getPlayerShield(currentSponsorIndex);
-                        // Proceed to the next stage
                         currentStage++;
                         if (currentStage > totalStages) {
                             logToConsole("\nQuest setup process finished.\n\n");
@@ -442,13 +434,13 @@ async function handleQuestSponsor() {
                 console.error("Error handling quest sponsor:", error);
                 logToConsole(`Error handling quest sponsor: ${error.message}`);
             } finally {
-                inputField.value = ""; // Clear input field
-                inputField.focus(); // Refocus for the next input
+                inputField.value = "";
+                inputField.focus();
             }
         }
     };
 
-    inputField.removeEventListener("keypress", handleInput); // Prevent duplicate listeners
+    inputField.removeEventListener("keypress", handleInput);
     inputField.addEventListener("keypress", handleInput);
 
     logToConsole(`Quest sponsorship setup started. Enter the position of the card to add for stage ${currentStage}. Type 'quit' to finish the stage.`);
@@ -456,9 +448,9 @@ async function handleQuestSponsor() {
 
 async function handlePlayerParticipation() {
     const inputField = document.getElementById("trim-card-index");
-    const sponsorIndex = await getCurrentSponsorIndex(); // Fetch sponsor index from the backend
+    const sponsorIndex = await getCurrentSponsorIndex();
     let phase = "participation";
-    let currentPlayerIndex = 0; // Start with the first player
+    let currentPlayerIndex = 0;
     let currentStageIndex = 1;
 
     inputField.focus();
@@ -488,7 +480,6 @@ async function handlePlayerParticipation() {
                 logToConsole(result);
 
                 if (phase === "participation") {
-                    // Skip the sponsor
                     do {
                         currentPlayerIndex++;
                     } while (currentPlayerIndex === sponsorIndex);
@@ -535,10 +526,9 @@ async function handlePlayerParticipation() {
         }
     };
 
-    inputField.removeEventListener("keypress", handleInput); // Prevent duplicate listeners
+    inputField.removeEventListener("keypress", handleInput);
     inputField.addEventListener("keypress", handleInput);
 
-    // Start by skipping the sponsor if the first player is the sponsor
     if (currentPlayerIndex === sponsorIndex) {
         currentPlayerIndex++;
     }
@@ -549,7 +539,6 @@ async function handlePlayerParticipation() {
 }
 
 
-// Helper function to get the sponsor index from the backend
 async function getCurrentSponsorIndex() {
     try {
         const response = await fetch(`${apiBaseUrl}/getCurrentSponsor`);
@@ -680,15 +669,15 @@ async function handlePlayerAttack() {
 }
 
 async function doneQuest(){
+    questCompleted = "true";
     const final = await endGame();
-    if(final.includes("End Game!")) return;
-    questCompleted = true;
     await startTrimming();
+    if(final.includes("End Game!")) return;
     await nextPlayer();
     await playTurn();
 }
 
-let questCompleted = false;
+let questCompleted = "false";
 async function resolveStage() {
     const inputField = document.getElementById("trim-card-index");
     let stageWinners = await getStageWinners();
@@ -697,8 +686,17 @@ async function resolveStage() {
     const totalStages = await getNewDrawnCard();
     inputField.focus();
 
-    if ((!stageWinners || stageWinners.length === 0) && (questCompleted === false)) {
-        logToConsole("No stage winners to resolve.");
+    questCompleted = await checkQuestEndStatus();
+
+//    if(questCompleted == "true") {
+//        inputField.removeEventListener("keypress", handleInput); // Ensure cleanup
+//        await handleQuestEnd();
+//        await doneQuest();
+//        return;
+//    }
+
+    if ((!stageWinners || stageWinners.length === 0) && (questCompleted === "true")) {
+        logToConsole("No stage winners to resolve. <1>");
         inputField.removeEventListener("keypress", handleInput); // Ensure cleanup
         await handleQuestEnd();
         await doneQuest();
@@ -724,7 +722,6 @@ async function resolveStage() {
                     return;
                 }
 
-                // Fetch from the backend and handle the response
                 const currentWinnerIndexInGame = await getPlayerIndexInGame(currentWinner.name);
                 const response = await fetch(`${apiBaseUrl}/handleStageResolve?currentPlayer=${currentWinnerIndexInGame}&input=${encodeURIComponent(inputValue)}`, {
                     method: "GET"
@@ -736,16 +733,14 @@ async function resolveStage() {
                 }
 
                 const responseText = await response.text();
-                logToConsole(responseText); // Output the result from the backend
+                logToConsole(responseText);
 
                 if (responseText.includes("The quest has failed")) {
                     inputField.removeEventListener("keypress", handleInput);
-                    en
                     await doneQuest();
                     return;
                 }
 
-                // Move to the next participant
                 currentWinnerIndex++;
                 inputField.value = "";
 
@@ -753,18 +748,10 @@ async function resolveStage() {
                     currentWinnerIndex = 0;
                     currentStageIndex++;
 
-                    if (currentStageIndex > totalStages) {
-                        logToConsole("The quest has ended.");
-                        logToConsole("I am here!")
-                        inputField.removeEventListener("keypress", handleInput);
-                        await doneQuest();
-                        return;
-                    }
-
-                    // Fetch new stage winners for the next stage
                     stageWinners = await getStageWinners();
                     if (!stageWinners || stageWinners.length === 0) {
                         logToConsole("No participants remain. The quest has failed.");
+                        await handleQuestEnd();
                         inputField.removeEventListener("keypress", handleInput);
                         await doneQuest();
                         return;
@@ -794,10 +781,26 @@ async function resolveStage() {
     inputField.removeEventListener("keypress", handleInput);
     inputField.addEventListener("keypress", handleInput);
 
-    // Start prompting winners for the current stage
     const firstWinner = stageWinners[currentWinnerIndex];
-    logToConsole(`${firstWinner.name}, do you want to continue for the next stage? (y/n)`);
+    if(!firstWinner){
+        logToConsole("No stage winners to resolve.");
+        await handleQuestEnd();
+        inputField.removeEventListener("keypress", handleInput);
+        await doneQuest();
+        return;
+    }
+    questCompleted = await checkQuestEndStatus();
+
+    if(questCompleted == "false"){
+        logToConsole(`${firstWinner.name}, do you want to continue for the next stage? (y/n)`);
+    }else{
+        inputField.removeEventListener("keypress", handleInput);
+        await doneQuest();
+        return;
+    }
 }
+
+
 
 
 async function getPlayerIndexInGame(playerName) {
@@ -808,11 +811,11 @@ async function getPlayerIndexInGame(playerName) {
         }
 
         const playerIndex = await response.text();
-        return parseInt(playerIndex, 10); // Convert the response to an integer
+        return parseInt(playerIndex, 10);
     } catch (error) {
         console.error("Error fetching player index:", error);
         logToConsole(`Error fetching player index: ${error.message}`);
-        throw error; // Rethrow error to handle it in calling code
+        throw error;
     }
 }
 
@@ -848,7 +851,44 @@ async function handleQuestEnd(){
     }
 }
 
+async function rigScenario(scenario) {
+    try {
+        const response = await fetch(`${apiBaseUrl}/rigScenarios?scenario=${scenario}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to rig scenario ${scenario}: ${response.status}`);
+        }
+
+        const result = await response.text();
+        logToConsole(`Scenario ${scenario} rigged successfully!`);
+        console.log(result);
+    } catch (error) {
+        logToConsole(`Error rigging scenario ${scenario}: ${error.message}`);
+        console.error("Error rigging scenario:", error);
+    }
+}
+
+async function checkQuestEndStatus() {
+    try {
+        const response = await fetch(`${apiBaseUrl}/getEndQuest`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch quest status: ${response.status}`);
+        }
+
+        const questEnded = await response.text();
+        return questEnded;
+    } catch (error) {
+        console.error("Error fetching quest end status:", error);
+    }
+}
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("test-btn").addEventListener("click", setupGame);
     document.getElementById("play-turn-btn").addEventListener("click", playTurn);
+    document.getElementById("scenario1").addEventListener("click", () => rigScenario(1));
+    document.getElementById("scenario2").addEventListener("click", () => rigScenario(2));
+    document.getElementById("scenario3").addEventListener("click", () => rigScenario(3));
+    document.getElementById("scenario4").addEventListener("click", () => rigScenario(4));
 });

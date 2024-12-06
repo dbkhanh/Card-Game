@@ -75,10 +75,6 @@ public class Controller {
         return game.getCurrentPlayerIndex();
     }
 
-    @GetMapping("/getDoneStage")
-    public boolean getDoneStage(){
-        return game.getDoneStage();
-    }
 
     @PostMapping("/setDoneStage")
     public String setDoneStage(@RequestParam boolean doneStage) {
@@ -175,5 +171,12 @@ public class Controller {
         return game.handleQuestEnd();
     }
 
+    @GetMapping("/getEndQuest")
+    public boolean getEndQuest(){return game.getEndQuest();}
+
+    @GetMapping("/rigScenarios")
+    public void rigScenarios(@RequestParam int scenario){
+        game.rigScenarios(scenario);
+    }
 
 }

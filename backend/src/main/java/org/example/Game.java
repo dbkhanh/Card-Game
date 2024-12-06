@@ -114,7 +114,8 @@ public Game(List<String> playerNames) {
     public String playTurn() {
         StringBuilder output = new StringBuilder();
         Player currentPlayer = players.get(currentPlayerIndex);
-        endQuest = true;
+        endQuest = false;
+        stageWinners.clear();
         output.append("\n\n--- Turn of ").append(currentPlayer.getName()).append(" ---\n\n");
 
         Card drawnCard = eventDeck.draw();
@@ -328,12 +329,10 @@ public Game(List<String> playerNames) {
     public String handlePlayerParticipation(int currentPlayerIndex, String input) {
         StringBuilder output = new StringBuilder();
 
-        // Participation Phase
-        if (askPlayer > 0) { // Check if we're still prompting players
+        if (askPlayer > 0) { 
             output.append(promptPlayersForParticipation(currentPlayerIndex, input));
             askPlayer--;
 
-            // If no players join after participation phase, end the quest
             if (askPlayer == 0) {
                 if (stageParticipants.isEmpty()) {
                     output.append("\n\nNo participants decided to join the quest. The quest has failed.\n\n");
@@ -347,7 +346,7 @@ public Game(List<String> playerNames) {
                         output.append(drawCardsForParticipants());
                     }
                 }
-                return output.toString(); // Return participation results
+                return output.toString();
             }
         }
         return output.toString();
@@ -387,6 +386,7 @@ public Game(List<String> playerNames) {
 
     public String handleQuestEnd() {
         StringBuilder output = new StringBuilder();
+        endQuest = true;
         Player sponsor = getPlayers().get(currentSponsor);
         output.append("\n\nThe quest has ended. ").append(sponsor.getName()).append(" discards all cards used to build the quest.\n\n");
 
@@ -410,29 +410,9 @@ public Game(List<String> playerNames) {
         foeCard = null;
         usedWeaponNames.clear();
         selectedCards.clear();
-        stageWinners.clear();
         stageValues.clear();
         return output.toString();
     }
-
-
-
-//
-//    private String printEligibleParticipants(List<Player> participants) {
-//        StringBuilder output = new StringBuilder();
-//
-//        if (!participants.isEmpty()) {
-//            output.append("Eligible participants for the next stage: ");
-//            for (Player participant : participants) {
-//                output.append(participant.getName()).append(" ");
-//            }
-//            output.append("\n\n");
-//        } else {
-//            output.append("No eligible participants for this stage.\n\n");
-//        }
-//
-//        return output.toString();
-//    }
 
 
     private boolean isFinalStage(int stageIndex) {
@@ -515,7 +495,6 @@ public Game(List<String> playerNames) {
     public Map<String, Object> prepareAttack(Player participant, String input) {
         StringBuilder output = new StringBuilder();
 
-        // Handle "quit" to end the attack turn
         if (input.equalsIgnoreCase("quit")) {
             output.append(participant.getName()).append(" has chosen to end their attack turn.\n");
             Map<String, Object> result = new HashMap<>();
@@ -524,22 +503,18 @@ public Game(List<String> playerNames) {
             return result;
         }
 
-        // Try to parse the input and select the card
         try {
-            int position = Integer.parseInt(input) - 1; // Convert input to zero-based index
+            int position = Integer.parseInt(input) - 1;
 
-            // Check if the position is valid within the player's hand
             if (position >= 0 && position < participant.getHandSize()) {
                 Card selectedCard = participant.getHand().get(position);
 
-                // Only allow Weapon cards for the attack
                 if (selectedCard.getType().equals("Weapon")) {
-                    // Check if the weapon name has already been used in this stage
                     if (usedWeaponNames.contains(selectedCard.getName())) {
                         output.append("\nInvalid selection: A stage cannot have repeated Weapon cards. Please choose another card.\n\n");
                     } else {
                         selectedCards.add(selectedCard);
-                        usedWeaponNames.add(selectedCard.getName()); // Track the weapon name
+                        usedWeaponNames.add(selectedCard.getName());
                         output.append(selectedCard.getName()).append(" (Weapon) added to your attack.\n\n");
                     }
                 } else {
@@ -552,7 +527,6 @@ public Game(List<String> playerNames) {
             output.append("\nInvalid input: Please enter a card position as a number.\n\n");
         }
 
-        // Create the result map with both message and selected cards
         Map<String, Object> result = new HashMap<>();
         result.put("message", output.toString());
         result.put("selectedCards", selectedCards);
@@ -647,5 +621,213 @@ public Game(List<String> playerNames) {
 
     public int getNewDrawnCard(){return newDrawnCard.getValue();}
 
+    public void rigScenarios(int scenario){
+        rigPlayerHands(scenario);
+        setUpAdventureDeck(scenario);
+        setUpQuestCards(scenario);
+    }
+
+
+    public void rigPlayerHands(int scenario) {
+        switch (scenario) {
+            case 1:
+                getPlayers().get(0).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F15", "Foe", 15),
+                        new Card("F15", "Foe", 15), new Card("D5", "Weapon", 5), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10),
+                        new Card("B15", "Weapon", 15), new Card("B15", "Weapon", 15), new Card("L20", "Weapon", 20)
+                ));
+                getPlayers().get(1).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F20", "Foe", 20),
+                        new Card("F30", "Foe", 30), new Card("D5", "Weapon", 5), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20)
+                ));
+                getPlayers().get(2).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F5", "Foe", 5),
+                        new Card("F15", "Foe", 15), new Card("D5", "Weapon", 5), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("B15", "Weapon", 15), new Card("L20", "Weapon", 20)
+                ));
+                getPlayers().get(3).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F15", "Foe", 15), new Card("F15", "Foe", 15),
+                        new Card("F40", "Foe", 40), new Card("D5", "Weapon", 5), new Card("D5", "Weapon", 5),
+                        new Card("S10", "Weapon", 10), new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10),
+                        new Card("B15", "Weapon", 15), new Card("L20", "Weapon", 20), new Card("E30", "Weapon", 30)
+                ));
+                break;
+
+            case 2:
+                getPlayers().get(0).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F10", "Foe", 10),
+                        new Card("F10", "Foe", 10), new Card("F15", "Foe", 15), new Card("F15", "Foe", 15),
+                        new Card("D5", "Weapon", 5), new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10),
+                        new Card("B15", "Weapon", 15), new Card("B15", "Weapon", 15), new Card("L20", "Weapon", 20)
+                ));
+                getPlayers().get(1).setHand(List.of(
+                        new Card("F40", "Foe", 40), new Card("F50", "Foe", 50), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15), new Card("B15", "Weapon", 15),
+                        new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20), new Card("E30", "Weapon", 30)
+                ));
+                getPlayers().get(2).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F5", "Foe", 5),
+                        new Card("F5", "Foe", 5), new Card("D5", "Weapon", 5), new Card("D5", "Weapon", 5),
+                        new Card("D5", "Weapon", 5), new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10)
+                ));
+                getPlayers().get(3).setHand(List.of(
+                        new Card("F50", "Foe", 50), new Card("F70", "Foe", 70), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15), new Card("B15", "Weapon", 15),
+                        new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20), new Card("E30", "Weapon", 30)
+                ));
+                break;
+
+            case 3:
+                getPlayers().get(0).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F10", "Foe", 10),
+                        new Card("F10", "Foe", 10), new Card("F15", "Foe", 15), new Card("F15", "Foe", 15),
+                        new Card("F20", "Foe", 20), new Card("F20", "Foe", 20), new Card("D5", "Weapon", 5),
+                        new Card("D5", "Weapon", 5), new Card("D5", "Weapon", 5), new Card("D5", "Weapon", 5)
+                ));
+                getPlayers().get(1).setHand(List.of(
+                        new Card("F25", "Foe", 25), new Card("F30", "Foe", 30), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15), new Card("B15", "Weapon", 15),
+                        new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20), new Card("E30", "Weapon", 30)
+                ));
+                getPlayers().get(2).setHand(List.of(
+                        new Card("F25", "Foe", 25), new Card("F30", "Foe", 30), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15), new Card("B15", "Weapon", 15),
+                        new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20), new Card("E30", "Weapon", 30)
+                ));
+                getPlayers().get(3).setHand(List.of(
+                        new Card("F25", "Foe", 25), new Card("F30", "Foe", 30), new Card("F70", "Foe", 70),
+                        new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15),
+                        new Card("B15", "Weapon", 15), new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20)
+                ));
+                break;
+
+            case 4:
+                getPlayers().get(0).setHand(List.of(
+                        new Card("F50", "Foe", 50), new Card("F70", "Foe", 70), new Card("D5", "Weapon", 5),
+                        new Card("D5", "Weapon", 5), new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10), new Card("B15", "Weapon", 15),
+                        new Card("B15", "Weapon", 15),  new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20)
+                ));
+                getPlayers().get(1).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F10", "Foe", 10),
+                        new Card("F15", "Foe", 15), new Card("F15", "Foe", 15), new Card("F20", "Foe", 20),
+                        new Card("F20", "Foe", 20), new Card("F25", "Foe", 25), new Card("F30", "Foe", 30),
+                        new Card("F30", "Foe", 30), new Card("F40", "Foe", 40), new Card("E30", "Weapon", 30)
+                ));
+                getPlayers().get(2).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F10", "Foe", 10),
+                        new Card("F15", "Foe", 15), new Card("F15", "Foe", 15), new Card("F20", "Foe", 20),
+                        new Card("F20", "Foe", 20), new Card("F25", "Foe", 25), new Card("F25", "Foe", 25),
+                        new Card("F30", "Foe", 30), new Card("F40", "Foe", 40), new Card("L20", "Weapon", 20)
+                ));
+                getPlayers().get(3).setHand(List.of(
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F10", "Foe", 10),
+                        new Card("F15", "Foe", 15), new Card("F15", "Foe", 15), new Card("F20", "Foe", 20),
+                        new Card("F20", "Foe", 20), new Card("F25", "Foe", 25), new Card("F25", "Foe", 25),
+                        new Card("F30", "Foe", 30), new Card("F40", "Foe", 40), new Card("E30", "Weapon", 30)
+                ));
+                break;
+
+
+
+
+            default:
+                throw new IllegalArgumentException("Invalid scenario: " + scenario);
+        }
+    }
+
+
+    public void setUpAdventureDeck(int scenario){
+            List<Card> riggedDraws = switch (scenario) {
+                case 1 -> List.of(
+                        new Card("F30", "Foe", 30), new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15),
+                        new Card("F10", "Foe", 10), new Card("L20", "Weapon", 20), new Card("L20", "Weapon", 20),
+                        new Card("B15", "Weapon", 15), new Card("S10", "Weapon", 10), new Card("F30", "Foe", 30),
+                        new Card("L20", "Weapon", 20)
+                );
+                case 2 -> List.of(
+                        new Card("F5", "Foe", 5), new Card("F40", "Foe", 40), new Card("F10", "Foe", 10),
+                        new Card("F10", "Foe", 10), new Card("F30", "Foe", 30), new Card("F30", "Foe", 30),
+                        new Card("F15", "Foe", 15), new Card("F15", "Foe", 15), new Card("F20", "Foe", 20),
+                        new Card("F5", "Foe", 5), new Card("F10", "Foe", 10), new Card("F15", "Foe", 15),
+                        new Card("F15", "Foe", 15), new Card("F20", "Foe", 20), new Card("F20", "Foe", 20),
+                        new Card("F20", "Foe", 20), new Card("F20", "Foe", 20), new Card("F25", "Foe", 25),
+                        new Card("F25", "Foe", 25), new Card("F30", "Foe", 30), new Card("D5", "Weapon", 5),
+                        new Card("D5", "Weapon", 5), new Card("F15", "Foe", 15), new Card("F15", "Foe", 15),
+                        new Card("F25", "Foe", 25), new Card("F25", "Foe", 25), new Card("F20", "Foe", 20),
+                        new Card("F20", "Foe", 20), new Card("F25", "Foe", 25), new Card("F30", "Foe", 30),
+                        new Card("S10", "Weapon", 10), new Card("B15", "Weapon", 15), new Card("B15", "Weapon", 15),
+                        new Card("L20", "Weapon", 20)
+                );
+
+                case 3 -> List.of(
+                        new Card("F5", "Foe", 5), new Card("F10", "Foe", 10), new Card("F20", "Foe", 20),
+                        new Card("F15", "Foe", 15), new Card("F5", "Foe", 5), new Card("F25", "Foe", 25),
+                        new Card("F5", "Foe", 5), new Card("F10", "Foe", 15), new Card("F20", "Foe", 20),
+                        new Card("F5", "Foe", 5), new Card("F10", "Foe", 10), new Card("F20", "Foe", 20),
+                        new Card("F5", "Foe", 5), new Card("F5", "Foe", 5), new Card("F10", "Foe", 10),
+                        new Card("F10", "Foe", 10), new Card("F15", "Foe", 15), new Card("F15", "Foe", 15),
+                        new Card("F15", "Foe", 15), new Card("F15", "Foe", 15), new Card("F25", "Foe", 25),
+                        new Card("F25", "Foe", 25), new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("B15", "Weapon", 15), new Card("F40", "Foe", 40), new Card("D5", "Weapon", 5),
+                        new Card("D5", "Weapon", 5), new Card("F30", "Foe", 30), new Card("F25", "Foe", 25),
+                        new Card("B15", "Weapon", 15), new Card("H10", "Weapon", 10), new Card("F50", "Foe", 50),
+                        new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("F40", "Foe", 40),
+                        new Card("F50", "Foe", 50), new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10), new Card("F35", "Foe", 35)
+                );
+                case 4 -> List.of(
+                        new Card("F5", "Foe", 5), new Card("F15", "Foe", 15), new Card("F10", "Foe", 10),
+                        new Card("F5", "Foe", 5), new Card("F10", "Foe", 10), new Card("F15", "Foe", 15),
+                        new Card("D5", "Weapon", 5), new Card("D5", "Weapon", 5), new Card("D5", "Weapon", 5),
+                        new Card("D5", "Weapon", 5), new Card("H10", "Weapon", 10),new Card("H10", "Weapon", 10),
+                        new Card("H10", "Weapon", 10), new Card("H10", "Weapon", 10), new Card("S10", "Weapon", 10),
+                        new Card("S10", "Weapon", 10), new Card("S10", "Weapon", 10)
+                );
+                default -> throw new IllegalArgumentException("Invalid scenario: " + scenario);
+            };
+            getAdventureDeck().stackCardsOnTop(riggedDraws);
+    }
+
+    public void setUpQuestCards(int scenario){
+        List<Card> Quest = switch (scenario) {
+            case 1 -> List.of(
+                    new Card("Q4", "Quest", 4)
+            );
+
+            case 2 -> List.of(
+                    new Card("Q4", "Quest", 4),
+                    new Card("Q3", "Quest", 3)
+                    );
+            case 3 -> List.of(
+                    new Card("Q4", "Quest", 4),
+                    new Card("Plague", "Event", -2),
+                    new Card("Prosperity", "Event",2),
+                    new Card("Queen's Favor", "Event",2 ),
+                    new Card("Q3", "Quest", 3)
+            );
+
+            case 4 -> List.of(
+                    new Card("Q2", "Quest", 2)
+                );
+            default  -> throw new IllegalArgumentException("Invalid scenario: " + scenario);
+        };
+        getEventDeck().stackCardsOnTop(Quest);
+    }
+
+    public boolean getEndQuest(){
+        return endQuest;
+    }
 
 }
