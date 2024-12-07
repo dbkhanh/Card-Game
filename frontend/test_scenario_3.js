@@ -25,8 +25,8 @@ async function runTest() {
                     "3\nquit\n3\nquit\n4\nquit\ny\ny\ny\n6\nquit\n6\nquit\n" +
                     "7\nquit\ny\ny\ny\n8\nquit\n8\nquit\n9\nquit\ny\ny\ny\n" +
                     "10\nquit\n10\nquit\n11\nquit\n1\n1\n2\n2\n1\n1\n1\n1\n" +
-                    "1\n1\n2\n3\ny\n1\nquit\n1\n8\nquit\n4\n7\nquit\ny\ny\ny\n" +
-                    "1\n1\n1\n9\nquit\n9\nquit\n9\nquit\ny\ny\n10\n8\nquit\n" +
+                    "1\n4\n4\ny\n1\nquit\n1\n8\nquit\n4\n7\nquit\ny\ny\ny\n" +
+                    "1\n1\n1\n9\nquit\n9\nquit\n10\nquit\ny\ny\n10\n8\nquit\n" +
                     "10\n5\nquit\ny\ny\n10\n5\nquit\n11\nquit\n1\n1\n1\n";
 
         let inputField = await driver.findElement(By.id('trim-card-index'));
@@ -42,8 +42,8 @@ async function runTest() {
         let expectedFinalStates = [
             `Player 1's final hand after quest is F25, F25, F35, D5, D5, S10, S10, S10, S10, H10, H10, H10\nPlayer 1's final shield after quest is 0`,
             `Player 2's final hand after quest is F15, F25, F30, F40, S10, S10, S10, H10, E30\nPlayer 2's final shield after quest is 5`,
-            `Player 3's final hand after quest is F10, F25, F30, F40, F50, S10, S10, H10, H10, L20, E30\nPlayer 3's final shield after quest is 7`,
-            `Player 4's final hand after quest is F25, F30, F50, F70, D5, D5, S10, S10, B15, L20, L20\nPlayer 4's final shield after quest is 4`
+            `Player 3's final hand after quest is F10, F25, F30, F40, F50, S10, S10, H10, H10, L20\nPlayer 3's final shield after quest is 7`,
+            `Player 4's final hand after quest is F25, F25, F30, F50, F70, D5, D5, S10, S10, B15, L20\nPlayer 4's final shield after quest is 4`
         ];
 
         let consoleStatus = await driver.findElement(By.id('console')).getText();

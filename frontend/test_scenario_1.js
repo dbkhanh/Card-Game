@@ -42,7 +42,7 @@ async function runTest() {
             `Player 1's final hand after quest is F5, F10, F15, F15, F30, H10, B15, B15, L20\nPlayer 1's final shield after quest is 0`,
             `Player 2's final hand after quest is D5, S10, S10, S10, S10, S10, S10, H10, L20, L20, L20, L20\nPlayer 2's final shield after quest is 0`,
             `Player 3's final hand after quest is F5, F5, F15, F30, S10\nPlayer 3's final shield after quest is 0`,
-            `Player 4's final hand after quest is F15, F15, F40, D5, S10, L20, L20, E30\nPlayer 4's final shield after quest is 4`
+            `Player 4's final hand after quest is F15, F15, F40, L20\nPlayer 4's final shield after quest is 4`
         ];
 
         let consoleStatus = await driver.findElement(By.id('console')).getText();

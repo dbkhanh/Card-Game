@@ -467,8 +467,13 @@ public Game(List<String> playerNames) {
             if (attackValue >= stageValues.get(currentStageIndex - 1)) {
 //                output.append(participant.getName()).append("'s updated hand: ").append(participant.showHand());
                 output.append(participant.getName()).append(" succeeds with an attack value of ").append(attackValue).append("!\n\n");
+                for (Card card : selectedCards) {
+                    participant.getHand().remove(card);
+                }
                 if(!stageWinners.contains(participant)) stageWinners.add(participant);
-                if (isFinalStage(currentStageIndex)) output.append(awardShieldsToWinners(participant, stageValues.size()));
+                if (isFinalStage(currentStageIndex)){
+                    output.append(awardShieldsToWinners(participant, stageValues.size()));
+                }
                 if (participant.equals(stageWinners.get(stageWinners.size() - 1)) && isFinalStage(currentStageIndex)) output.append(handleQuestEnd());
             } else {
                 stageParticipants.remove(participant);
