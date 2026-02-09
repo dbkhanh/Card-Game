@@ -1,4 +1,4 @@
-# Tournament of Kings — Java Card Game (QA-Focused Project)
+# Tournament of Kings - Java Card Game 
 
 Tournament of Kings is a turn-based card game implemented in Java, where players participate in quests, defeat foes using weapons, and earn shields by completing stages. The primary goal of this project was **not gameplay complexity**, but **software correctness, testability, and quality assurance**.
 
